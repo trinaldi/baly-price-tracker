@@ -1,9 +1,9 @@
-class CreateProceChecks < ActiveRecord::Migration[8.0]
+class CreatePriceChecks < ActiveRecord::Migration[8.0]
   def change
-    create_table :proce_checks do |t|
+    create_table :price_checks do |t|
       t.integer :price_cents
       t.string :status
-      t.string :error_message_text
+      t.text :error_message
       t.datetime :checked_at
 
       t.timestamps

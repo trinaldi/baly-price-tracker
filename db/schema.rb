@@ -10,11 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_02_141829) do
-  create_table "proce_checks", force: :cascade do |t|
+ActiveRecord::Schema[8.0].define(version: 2026_10_02_142400) do
+  create_table "price_checks", force: :cascade do |t|
     t.integer "price_cents"
     t.string "status"
-    t.string "error_message_text"
+    t.text "error_message"
     t.datetime "checked_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

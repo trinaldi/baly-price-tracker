@@ -1,0 +1,2 @@
+class PriceCheck < ApplicationRecord
+end

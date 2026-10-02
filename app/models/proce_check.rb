@@ -1,2 +1,0 @@
-class ProceCheck < ApplicationRecord
-end
