@@ -86,3 +86,6 @@ dump.rdb
 
 # Debuggers
 .byebug_history
+
+# Vim
+tags
