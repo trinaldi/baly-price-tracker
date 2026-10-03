@@ -24,6 +24,7 @@ gem "solid_cable"
 gem "bootsnap", require: false
 
 gem "json", "< 4"
+
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
 gem "kamal", require: false
 
