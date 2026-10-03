@@ -1,32 +1,22 @@
 require "rails_helper"
 
-RSpec.describe PriceMailer, type: :mailer do
-  describe "price_changed" do
-    let(:mail) { PriceMailer.price_changed }
+RSpec.describe PriceMailer do
+  let(:product) { Product.create!(name: "Baly", url: "https://example.com/baly") }
 
-    it "renders the headers" do
-      expect(mail.subject).to eq("Price changed")
-      expect(mail.to).to eq(["to@example.org"])
-      expect(mail.from).to eq(["from@example.com"])
-    end
+  before { ENV["PRICE_ALERT_EMAIL"] = "me@example.com" }
 
-    it "renders the body" do
-      expect(mail.body.encoded).to match("Hi")
-    end
+  it "builds the price_changed email" do
+    mail = described_class.price_changed(product, 450, 490)
+
+    expect(mail.to).to eq(["me@example.com"])
+    expect(mail.subject).to include("Baly")
+    expect(mail.body.encoded).to include("R$ 4,50").and include("R$ 4,90")
   end
 
-  describe "failed" do
-    let(:mail) { PriceMailer.failed }
+  it "builds the failed email" do
+    mail = described_class.failed(product, "boom")
 
-    it "renders the headers" do
-      expect(mail.subject).to eq("Failed")
-      expect(mail.to).to eq(["to@example.org"])
-      expect(mail.from).to eq(["from@example.com"])
-    end
-
-    it "renders the body" do
-      expect(mail.body.encoded).to match("Hi")
-    end
+    expect(mail.to).to eq(["me@example.com"])
+    expect(mail.body.encoded).to include("boom")
   end
-
 end

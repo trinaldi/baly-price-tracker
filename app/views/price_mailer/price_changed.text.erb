@@ -1,3 +1,6 @@
-Price#price_changed
+O preço de <%= @product.name %> mudou.
 
-<%= @greeting %>, find me in app/views/price_mailer/price_changed.text.erb
+Antes: <%= @old_price %>
+Agora: <%= @new_price %>
+
+<%= @product.url %>
