@@ -30,7 +30,7 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Email on browser
-  config.action_mailer.delivery_method = :letter_opened
+  config.action_mailer.delivery_method = :letter_opener
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
