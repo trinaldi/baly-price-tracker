@@ -41,6 +41,7 @@ module PriceTracker
     end
 
     def notify_price_chance(previous_price, current_price)
+      update_timestamp
       return if previous_price.nil? || previous_price == current_price
 
       PriceMailer.price_changed(@product, previous_price, current_price).deliver_now
@@ -54,6 +55,10 @@ module PriceTracker
       )
       PriceMailer.failed(@product, error.message).deliver_now
       check
+    end
+
+    def update_timestamp
+      @product.update!(updated_at: Time.current)
     end
   end
 end
