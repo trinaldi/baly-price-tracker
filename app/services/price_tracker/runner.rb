@@ -58,7 +58,7 @@ module PriceTracker
     end
 
     def update_timestamp
-      @product.update!(updated_at: Time.current)
+      @product.update!(checked_at: Time.current)
     end
   end
 end

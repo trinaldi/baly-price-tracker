@@ -7,7 +7,7 @@ module PriceTracker
 
     OPEN_TIMEOUT = 10
     READ_TIMEOUT = 10
-    USER_AGENT = "Mozilla/5.0 (compatible; PriceTracker/1.0)".freeze
+    USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:160.0) Gecko/20100101 Firefox/160.0".freeze
     NETWORK_ERRORS = [
       Net::OpenTimeout,
       Net::ReadTimeout,
