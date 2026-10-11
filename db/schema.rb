@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_03_131054) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_11_011139) do
   create_table "price_checks", force: :cascade do |t|
     t.integer "price_cents"
     t.string "status"
@@ -28,6 +28,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_03_131054) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "cookie"
+    t.integer "price_cents"
+    t.datetime "last_changed_at"
   end
 
   add_foreign_key "price_checks", "products"
