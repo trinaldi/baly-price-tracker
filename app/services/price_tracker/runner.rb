@@ -9,27 +9,17 @@ module PriceTracker
     end
 
     def call
-      previous_price = last_ok_price
+      previous_price = @product.price_cents
       result = fetch_and_parse
+      check = record_success(result.price_cents, previous_price)
 
-      check = @product.price_checks.create!(
-        status: "ok",
-        price_cents: result.price_cents,
-        checked_at: Time.current
-      )
-
-      notify_price_chance(previous_price, check.price_cents)
+      notify_price_change(previous_price, check.price_cents)
       check
-
     rescue Fetcher::FetchError, Parser::ParseError => e
       record_failure(e)
     end
 
     private
-
-    def last_ok_price
-      @product.price_checks.where(status: "ok").order(:checked_at).last&.price_cents
-    end
 
     def fetch_and_parse
       html = Fetcher.get(@product.url, headers: request_headers)
@@ -40,9 +30,30 @@ module PriceTracker
       @product.cookie.present? ? { "Cookie" => @product.cookie } : {}
     end
 
-    def notify_price_chance(previous_price, current_price)
-      update_timestamp
-      return if previous_price.nil? || previous_price == current_price
+    def record_success(price_cents, previous_price)
+      now = Time.current
+
+      ActiveRecord::Base.transaction do
+        check = @product.price_checks.create!(
+          status: "ok",
+          price_cents: price_cents,
+          checked_at: now
+        )
+
+        attributes = { price_cents: price_cents }
+        attributes[:last_changed_at] = now if price_changed?(previous_price, price_cents)
+        @product.update!(attributes)
+
+        check
+      end
+    end
+
+    def price_changed?(previous_price, current_price)
+      !previous_price.nil? && previous_price != current_price
+    end
+
+    def notify_price_change(previous_price, current_price)
+      return unless price_changed?(previous_price, current_price)
 
       PriceMailer.price_changed(@product, previous_price, current_price).deliver_now
     end
@@ -55,10 +66,6 @@ module PriceTracker
       )
       PriceMailer.failed(@product, error.message).deliver_now
       check
-    end
-
-    def update_timestamp
-      @product.update!(checked_at: Time.current)
     end
   end
 end

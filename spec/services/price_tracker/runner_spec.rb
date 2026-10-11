@@ -1,8 +1,8 @@
 require "rails_helper"
 
 RSpec.describe PriceTracker::Runner do
-  let(:product) { Product.create!(name: "Baly energetico melancia zero açucar 473ML", url: "https://www.simaodoces.com.br/mercearia-/baly-energetico-melancia-zero-acucar-473ml") }
-  let(:parsed) { PriceTracker::Parser::Result.new(name: "Baly energetico melancia zero açucar 473ML", price_cents: 490) }
+  let(:product) { Product.create!(name: "Baly", url: "https://example.com/baly") }
+  let(:parsed)  { PriceTracker::Parser::Result.new(name: "Baly", price_cents: 490) }
   let(:delivery) { instance_double(ActionMailer::MessageDelivery, deliver_now: true) }
 
   before do
@@ -12,54 +12,103 @@ RSpec.describe PriceTracker::Runner do
     allow(PriceMailer).to receive(:failed).and_return(delivery)
   end
 
-  it "saves an 'ok' check" do
-    check = described_class.call(product)
+  context "when the product has no price yet (first check)" do
+    it "saves an ok check" do
+      check = described_class.call(product)
 
-    expect(check).to be_persisted
-    expect(check.status).to eq("ok")
-    expect(check.price_cents).to eq(490)
+      expect(check).to be_persisted
+      expect(check.status).to eq("ok")
+      expect(check.price_cents).to eq(490)
+    end
+
+    it "stores the price on the product without marking a change" do
+      described_class.call(product)
+
+      product.reload
+      expect(product.price_cents).to eq(490)
+      expect(product.last_changed_at).to be_nil
+    end
+
+    it "does not email" do
+      described_class.call(product)
+
+      expect(PriceMailer).not_to have_received(:price_changed)
+    end
   end
 
-  it "does not email on the first check" do
-    described_class.call(product)
+  context "when the price is unchanged" do
+    let!(:changed_at) { 1.day.ago }
 
-    expect(PriceMailer).not_to have_received(:price_changed)
+    before { product.update!(price_cents: 490, last_changed_at: changed_at) }
+
+    it "records a new check" do
+      expect { described_class.call(product) }.to change(PriceCheck, :count).by(1)
+    end
+
+    it "does not email" do
+      described_class.call(product)
+
+      expect(PriceMailer).not_to have_received(:price_changed)
+    end
+
+    it "keeps last_changed_at" do
+      described_class.call(product)
+
+      expect(product.reload.last_changed_at).to be_within(1.second).of(changed_at)
+    end
   end
 
-  it "does not email when the price is unchanged" do
-    product.price_checks.create!(status: "ok", price_cents: 490, checked_at: 1.day.ago)
+  context "when the price changed" do
+    before { product.update!(price_cents: 450) }
 
-    described_class.call(product)
+    it "emails with the old and the new price" do
+      described_class.call(product)
 
-    expect(PriceMailer).not_to have_received(:price_changed)
+      expect(PriceMailer).to have_received(:price_changed).with(product, 450, 490)
+    end
+
+    it "updates the price and last_changed_at on the product" do
+      described_class.call(product)
+
+      product.reload
+      expect(product.price_cents).to eq(490)
+      expect(product.last_changed_at).to be_within(5.seconds).of(Time.current)
+    end
   end
 
-  it "emails when the price changed" do
-    product.price_checks.create!(status: "ok", price_cents: 450, checked_at: 1.day.ago)
+  context "when the fetch fails" do
+    before do
+      product.update!(price_cents: 450)
+      allow(PriceTracker::Fetcher).to receive(:get)
+        .and_raise(PriceTracker::Fetcher::FetchError, "boom")
+    end
 
-    described_class.call(product)
+    it "records an error check and emails" do
+      check = described_class.call(product)
 
-    expect(PriceMailer).to have_received(:price_changed).with(product, 450, 490)
+      expect(check.status).to eq("error")
+      expect(check.error_message).to eq("boom")
+      expect(PriceMailer).to have_received(:failed).with(product, "boom")
+    end
+
+    it "keeps the product price untouched" do
+      described_class.call(product)
+
+      expect(product.reload.price_cents).to eq(450)
+    end
   end
 
-  it "records an error and emails when the fetch fails" do
-    allow(PriceTracker::Fetcher).to receive(:get)
-      .and_raise(PriceTracker::Fetcher::FetchError, "boom")
+  context "when the parse fails" do
+    before do
+      allow(PriceTracker::Parser).to receive(:parse)
+        .and_raise(PriceTracker::Parser::ParseError, "price element not found")
+    end
 
-    check = described_class.call(product)
+    it "records an error check and emails" do
+      check = described_class.call(product)
 
-    expect(check.status).to eq("error")
-    expect(check.error_message).to eq("boom")
-    expect(PriceMailer).to have_received(:failed).with(product, "boom")
-  end
-
-  it "records an error and emails when parse fails" do
-    allow(PriceTracker::Parser).to receive(:parse)
-      .and_raise(PriceTracker::Parser::ParseError, "price element not found")
-
-    check = described_class.call(product)
-
-    expect(check.status).to eq("error")
-    expect(PriceMailer).to have_received(:failed)
+      expect(check.status).to eq("error")
+      expect(PriceMailer).to have_received(:failed)
+    end
   end
 end
