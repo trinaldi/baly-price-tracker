@@ -1,0 +1,14 @@
+products:
+  baly_melancia_sem_acucar:
+    name: "Baly energetico melancia zero açucar 473ML"
+    url: "https://www.simaodoces.com.br/mercearia-/baly-energetico-melancia-zero-acucar-473ml"
+    cookie: "LOJA=1106817"
+  agua_com_gas_12_unidades:
+    name: "Água Mineral Santa Inês com Gás 500ml c/12 un"
+    url: "https://www.simaodoces.com.br/santa-ines-agua-mineral-c-gas-500ml-12-unidades"
+    cookie: "LOJA=1106817"
+  chocolate_70_neugebauer:
+    name: "Neugebauer tablete 1891 supreme intense 45G"
+    url: "https://www.simaodoces.com.br/doces/neugebauer-tablete-1891-supreme-intense-45g"
+    cookie: "LOJA=1106817"
+

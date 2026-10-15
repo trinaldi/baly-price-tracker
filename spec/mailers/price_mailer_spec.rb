@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe PriceMailer do
-  let(:product) { Product.create!(name: "Baly", url: "https://example.com/baly") }
+  let(:product) { Product.create!(name: "Baly", slug: "baly", url: "https://example.com/baly") }
 
   before { ENV["PRICE_ALERT_EMAIL"] = "me@example.com" }
 

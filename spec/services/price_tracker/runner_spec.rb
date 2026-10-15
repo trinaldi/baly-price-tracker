@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe PriceTracker::Runner do
-  let(:product) { Product.create!(name: "Baly", url: "https://example.com/baly") }
+  let(:product) { Product.create!(name: "Baly", slug: "baly", url: "https://example.com/baly") }
   let(:parsed)  { PriceTracker::Parser::Result.new(name: "Baly", price_cents: 490) }
   let(:delivery) { instance_double(ActionMailer::MessageDelivery, deliver_now: true) }
 
