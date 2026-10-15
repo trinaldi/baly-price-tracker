@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Product, type: :model do
-  let(:attributes) { { name: "Baly", url: "https://example.com/baly" } }
+  let(:attributes) { { name: "Baly", slug: "baly", url: "https://example.com/baly" } }
 
   it "is valid with a name and a url" do
     expect(Product.new(attributes)).to be_valid
@@ -20,5 +20,17 @@ RSpec.describe Product, type: :model do
     product.price_checks.create!(status: "ok", price_cents: 490, checked_at: Time.current)
 
     expect { product.destroy }.to change(PriceCheck, :count).by(-1)
+  end
+
+  it "is invalid without a slug" do
+    expect(Product.new(attributes.except(:slug))).not_to be_valid
+  end
+
+  it "is invalid with a duplicate slug" do
+    Product.create!(attributes)
+
+    other = Product.new(attributes.merge(url: "https://example.com/outro"))
+
+    expect(other).not_to be_valid
   end
 end
