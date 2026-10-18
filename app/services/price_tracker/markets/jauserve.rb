@@ -8,7 +8,9 @@ module PriceTracker
 
       def self.host = "www.jauserve.com.br"
 
-      def self.cookie(cep: ENV.fetch("JAUSERVE_CEP"))
+      def self.cookie(cep: ENV["JAUSERVE_CEP"])
+        raise Markets::ConfigError, "JAUSERVE_CEP is not set" if cep.blank?
+
         "dw_storeid=#{STORE_ID}; dw_shippostalcode=#{cep}"
       end
 

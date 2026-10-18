@@ -20,12 +20,41 @@ RSpec.describe PriceTracker::Runner do
   let(:delivery) { instance_double(ActionMailer::MessageDelivery, deliver_now: true) }
 
   before do
-    allow(market).to receive(:price_cents).and_return(490)
     allow(PriceTracker::Markets).to receive(:for).and_return(market)
+    allow(market).to receive(:price_cents).and_return(490)
     allow(PriceTracker::Fetcher).to receive(:get).and_return("<html></html>")
-    allow(PriceTracker::Parser).to receive(:parse).and_return(parsed)
     allow(PriceMailer).to receive(:price_changed).and_return(delivery)
     allow(PriceMailer).to receive(:failed).and_return(delivery)
+  end
+
+  context "when the market is unknown" do
+    let(:product) { Product.create!(name: "X", slug: "x", url: "https://unknown.example.com/x") }
+
+    before { allow(PriceTracker::Markets).to receive(:for).and_call_original }
+
+    it "records an error check and emails" do
+      check = described_class.call(product)
+
+      expect(check.status).to eq("error")
+      expect(PriceMailer).to have_received(:failed).with(product, a_string_including("unknown.example.com"))
+    end
+  end
+
+  context "when the market is misconfigured" do
+    let(:product) { Product.create!(name: "J", slug: "j", url: "https://www.jauserve.com.br/1.html") }
+
+    before do
+      allow(PriceTracker::Markets).to receive(:for).and_call_original
+      allow(PriceTracker::Markets::Jauserve).to receive(:cookie)
+        .and_raise(PriceTracker::Markets::ConfigError, "JAUSERVE_CEP is not set")
+    end
+
+    it "records an error check and emails" do
+      check = described_class.call(product)
+
+      expect(check.status).to eq("error")
+      expect(PriceMailer).to have_received(:failed).with(product, "JAUSERVE_CEP is not set")
+    end
   end
 
   context "when the product has no price yet (first check)" do

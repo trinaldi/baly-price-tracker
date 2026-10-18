@@ -14,14 +14,6 @@ class PriceMailer < ApplicationMailer
     mail to: recipient, subject: "Falha ao verificar #{product.name}"
   end
 
-  def recipient
-    ENV.fetch("PRICE_ALERT_EMAIL")
-  end
-
-  def format_brl(cents)
-    format("R$ %.2f", cents / 100.0).tr(".", ",")
-  end
-
   def price_report(products)
     @products = products.map do |product|
       market = PriceTracker::Markets.for(product.url)
@@ -47,5 +39,15 @@ class PriceMailer < ApplicationMailer
     end
 
     mail to: recipient, subject: "Relatório de preços atuais"
+  end
+
+  private
+
+  def recipient
+    ENV.fetch("PRICE_ALERT_EMAIL")
+  end
+
+  def format_brl(cents)
+    format("R$ %.2f", cents / 100.0).tr(".", ",")
   end
 end

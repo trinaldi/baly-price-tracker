@@ -1,6 +1,6 @@
 module PriceTracker
   class ProductSync
-    CONFIG_KEYS = %w[name url cookie].freeze
+    CONFIG_KEYS = %w[name url].freeze
     DEFAULT_PATH = Rails.root.join("config/products.yml")
 
     def self.call(path = DEFAULT_PATH)

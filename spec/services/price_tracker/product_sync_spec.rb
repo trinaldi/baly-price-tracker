@@ -20,7 +20,6 @@ RSpec.describe PriceTracker::ProductSync do
         baly:
           name: "Baly"
           url: "https://example.com/baly"
-          cookie: "LOJA=1"
         agua:
           name: "Água"
           url: "https://example.com/agua"
@@ -32,7 +31,6 @@ RSpec.describe PriceTracker::ProductSync do
 
     baly = Product.find_by!(slug: "baly")
     expect(baly.name).to eq("Baly")
-    expect(baly.cookie).to eq("LOJA=1")
   end
 
   it "does not duplicate products when run twice" do

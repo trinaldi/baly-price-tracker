@@ -1,6 +1,7 @@
 module PriceTracker
   module Markets
     class UnknownMarket < StandardError; end
+    class ConfigError < StandardError; end
 
     def self.all
       [ Simao, Jauserve ]
