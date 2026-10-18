@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_15_224153) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_210042) do
   create_table "price_checks", force: :cascade do |t|
     t.integer "price_cents"
     t.string "status"
@@ -27,7 +27,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_15_224153) do
     t.string "url"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "cookie"
     t.integer "price_cents"
     t.datetime "last_changed_at"
     t.string "slug"
