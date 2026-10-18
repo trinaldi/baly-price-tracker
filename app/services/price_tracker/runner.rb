@@ -15,7 +15,7 @@ module PriceTracker
 
       notify_price_change(previous_price, check.price_cents)
       check
-    rescue Fetcher::FetchError, Parser::ParseError => e
+    rescue Fetcher::FetchError, Parser::ParseError, Markets::UnknownMarket, Markets::ConfigError => e
       record_failure(e)
     end
 
