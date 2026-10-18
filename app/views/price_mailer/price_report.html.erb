@@ -1,0 +1,26 @@
+<h1>Relatório de preços atuais</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Produto</th>
+      <th>Preço atual</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @products.each do |product| %>
+      <tr>
+        <td><%= product[:name] %></td>
+        <td>
+          <% if product[:error] %>
+            Erro: <%= product[:error] %>
+          <% else %>
+            <%= product[:price] %>
+          <% end %>
+        </td>
+        <td><%= link_to product[:url], product[:url] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

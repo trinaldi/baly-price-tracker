@@ -21,4 +21,31 @@ class PriceMailer < ApplicationMailer
   def format_brl(cents)
     format("R$ %.2f", cents / 100.0).tr(".", ",")
   end
+
+  def price_report(products)
+    @products = products.map do |product|
+      market = PriceTracker::Markets.for(product.url)
+
+      html = PriceTracker::Fetcher.get(
+        product.url,
+        headers: { "Cookie" => market.cookie }
+      )
+
+      {
+        name: product.name,
+        url: product.url,
+        price: format_brl(market.price_cents(html)),
+        error: nil
+      }
+    rescue StandardError => e
+      {
+        name: product.name,
+        url: product.url,
+        price: nil,
+        error: "#{e.class}: #{e.message}"
+      }
+    end
+
+    mail to: recipient, subject: "Relatório de preços atuais"
+  end
 end

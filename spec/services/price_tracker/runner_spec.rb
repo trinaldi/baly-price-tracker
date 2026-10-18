@@ -1,11 +1,27 @@
 require "rails_helper"
 
 RSpec.describe PriceTracker::Runner do
-  let(:product) { Product.create!(name: "Baly", slug: "baly", url: "https://example.com/baly") }
-  let(:parsed)  { PriceTracker::Parser::Result.new(name: "Baly", price_cents: 490) }
+  let(:market) do
+    class_double(
+      PriceTracker::Markets::Simao,
+      host: "example.com",
+      cookie: "test-cookie"
+    ).as_stubbed_const
+  end
+
+  let(:product) do
+    Product.create!(
+      name: "Baly",
+      slug: "baly",
+      url: "https://example.com/baly"
+    )
+  end
+  let(:parsed) { PriceTracker::Parser::Result.new(name: "Baly", price_cents: 490) }
   let(:delivery) { instance_double(ActionMailer::MessageDelivery, deliver_now: true) }
 
   before do
+    allow(market).to receive(:price_cents).and_return(490)
+    allow(PriceTracker::Markets).to receive(:for).and_return(market)
     allow(PriceTracker::Fetcher).to receive(:get).and_return("<html></html>")
     allow(PriceTracker::Parser).to receive(:parse).and_return(parsed)
     allow(PriceMailer).to receive(:price_changed).and_return(delivery)
@@ -100,7 +116,7 @@ RSpec.describe PriceTracker::Runner do
 
   context "when the parse fails" do
     before do
-      allow(PriceTracker::Parser).to receive(:parse)
+      allow(market).to receive(:price_cents)
         .and_raise(PriceTracker::Parser::ParseError, "price element not found")
     end
 

@@ -10,8 +10,8 @@ module PriceTracker
 
     def call
       previous_price = @product.price_cents
-      result = fetch_and_parse
-      check = record_success(result.price_cents, previous_price)
+      price_cents = fetch_and_parse
+      check = record_success(price_cents, previous_price)
 
       notify_price_change(previous_price, check.price_cents)
       check
@@ -22,12 +22,13 @@ module PriceTracker
     private
 
     def fetch_and_parse
-      html = Fetcher.get(@product.url, headers: request_headers)
-      Parser.parse(html)
+      market = Markets.for(@product.url)
+      html = Fetcher.get(@product.url, headers: request_headers(market))
+      market.price_cents(html)
     end
 
-    def request_headers
-      @product.cookie.present? ? { "Cookie" => @product.cookie } : {}
+    def request_headers(market)
+      { "Cookie" => market.cookie }
     end
 
     def record_success(price_cents, previous_price)
