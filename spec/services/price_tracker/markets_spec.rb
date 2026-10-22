@@ -13,6 +13,12 @@ RSpec.describe PriceTracker::Markets do
     expect(market).to eq(PriceTracker::Markets::Jauserve)
   end
 
+  it "finds the market by the host of the url furlanetti" do
+    market = described_class.for("https://furlanetti.com.br/p/qualquer-coisa")
+
+    expect(market).to eq(PriceTracker::Markets::Furlanetti)
+  end
+
   it "raises for an unknown host" do
     expect { described_class.for("https://outro-site.example.com/x") }
       .to raise_error(PriceTracker::Markets::UnknownMarket)

@@ -4,7 +4,7 @@ module PriceTracker
     class ConfigError < StandardError; end
 
     def self.all
-      [ Simao, Jauserve ]
+      [ Simao, Jauserve, Furlanetti ]
     end
 
     def self.for(url)

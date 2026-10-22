@@ -5,6 +5,7 @@ module PriceTracker
     class Jauserve
       STORE_ID = "3".freeze
       PRICE_SELECTOR = "span.sales span.value[content]".freeze
+      def self.club_price_cents(_html) = nil
 
       def self.host = "www.jauserve.com.br"
 

@@ -19,12 +19,15 @@ RSpec.describe PriceTracker::Runner do
   let(:parsed) { PriceTracker::Parser::Result.new(name: "Baly", price_cents: 490) }
   let(:delivery) { instance_double(ActionMailer::MessageDelivery, deliver_now: true) }
 
+
   before do
     allow(PriceTracker::Markets).to receive(:for).and_return(market)
     allow(market).to receive(:price_cents).and_return(490)
+    allow(market).to receive(:club_price_cents).and_return(nil)
     allow(PriceTracker::Fetcher).to receive(:get).and_return("<html></html>")
     allow(PriceMailer).to receive(:price_changed).and_return(delivery)
     allow(PriceMailer).to receive(:failed).and_return(delivery)
+    allow(PriceMailer).to receive(:club_offer).and_return(delivery)
   end
 
   context "when the market is unknown" do
@@ -154,6 +157,88 @@ RSpec.describe PriceTracker::Runner do
 
       expect(check.status).to eq("error")
       expect(PriceMailer).to have_received(:failed)
+    end
+  end
+
+  context "with a club price" do
+    let(:club_cents) { 399 }
+
+    before { allow(market).to receive(:club_price_cents).and_return(club_cents) }
+
+    context "on the first check" do
+      it "stores both prices and does not email" do
+        described_class.call(product)
+
+        product.reload
+        expect(product.price_cents).to eq(490)
+        expect(product.club_price_cents).to eq(399)
+        expect(PriceMailer).not_to have_received(:club_offer)
+        expect(PriceMailer).not_to have_received(:price_changed)
+      end
+    end
+
+    context "when the club offer appears" do
+      before { product.update!(price_cents: 490, club_price_cents: nil) }
+
+      it "emails the club offer" do
+        described_class.call(product)
+
+        expect(PriceMailer).to have_received(:club_offer).with(product, 399, 490)
+        expect(PriceMailer).not_to have_received(:price_changed)
+      end
+
+      it "does not touch last_changed_at" do
+        described_class.call(product)
+
+        expect(product.reload.last_changed_at).to be_nil
+      end
+    end
+
+    context "when the club price changes and is still cheaper" do
+      before { product.update!(price_cents: 490, club_price_cents: 450) }
+
+      it "emails the club offer" do
+        described_class.call(product)
+
+        expect(PriceMailer).to have_received(:club_offer).with(product, 399, 490)
+      end
+    end
+
+    context "when the club price is unchanged" do
+      before { product.update!(price_cents: 490, club_price_cents: 399) }
+
+      it "does not email" do
+        described_class.call(product)
+
+        expect(PriceMailer).not_to have_received(:club_offer)
+      end
+    end
+
+    context "when the club price is not cheaper than the regular price" do
+      let(:club_cents) { 490 }
+
+      before { product.update!(price_cents: 490, club_price_cents: nil) }
+
+      it "does not email" do
+        described_class.call(product)
+
+        expect(PriceMailer).not_to have_received(:club_offer)
+      end
+    end
+  end
+
+  context "when the club offer ends" do
+    before do
+      product.update!(price_cents: 490, club_price_cents: 399)
+      allow(market).to receive(:club_price_cents).and_return(nil)
+    end
+
+    it "clears the club price and does not email" do
+      described_class.call(product)
+
+      expect(product.reload.club_price_cents).to be_nil
+      expect(PriceMailer).not_to have_received(:club_offer)
+      expect(PriceMailer).not_to have_received(:price_changed)
     end
   end
 end
