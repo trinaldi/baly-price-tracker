@@ -5,6 +5,7 @@
     <tr>
       <th>Produto</th>
       <th>Preço atual</th>
+      <th>Preço do clube</th>
       <th>Link</th>
     </tr>
   </thead>
@@ -19,6 +20,7 @@
             <%= product[:price] %>
           <% end %>
         </td>
+        <td><%= product[:club_price] || "-" %></td>
         <td><%= link_to product[:url], product[:url] %></td>
       </tr>
     <% end %>

@@ -41,6 +41,14 @@ class PriceMailer < ApplicationMailer
     mail to: recipient, subject: "Relatório de preços atuais"
   end
 
+  def club_offer(product, club_cents, regular_cents)
+    @product = product
+    @club_price = format_brl(club_cents)
+    @regular_price = format_brl(regular_cents)
+
+    mail to: recipient, subject: "Preço do clube: #{product.name}"
+  end
+
   private
 
   def recipient
