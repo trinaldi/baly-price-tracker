@@ -1,5 +1,7 @@
 module PriceTracker
   class Runner
+    Prices = Data.define(:regular_cents, :club_cents)
+
     def self.call(product)
       new(product).call
     end
@@ -9,11 +11,11 @@ module PriceTracker
     end
 
     def call
-      previous_price = @product.price_cents
-      price_cents = fetch_and_parse
-      check = record_success(price_cents, previous_price)
+      previous = Prices.new(regular_cents: @product.price_cents, club_cents: @product.club_price_cents)
+      current = fetch_and_parse
+      check = record_success(current, previous)
 
-      notify_price_change(previous_price, check.price_cents)
+      notify(previous, current)
       check
     rescue Fetcher::FetchError, Parser::ParseError, Markets::UnknownMarket, Markets::ConfigError => e
       record_failure(e)
@@ -24,39 +26,59 @@ module PriceTracker
     def fetch_and_parse
       market = Markets.for(@product.url)
       html = Fetcher.get(@product.url, headers: request_headers(market))
-      market.price_cents(html)
+
+      Prices.new(
+        regular_cents: market.price_cents(html),
+        club_cents: market.club_price_cents(html)
+      )
     end
 
     def request_headers(market)
       { "Cookie" => market.cookie }
     end
 
-    def record_success(price_cents, previous_price)
+    def record_success(current, previous)
       now = Time.current
 
       ActiveRecord::Base.transaction do
         check = @product.price_checks.create!(
           status: "ok",
-          price_cents: price_cents,
+          price_cents: current.regular_cents,
+          club_price_cents: current.club_cents,
           checked_at: now
         )
 
-        attributes = { price_cents: price_cents }
-        attributes[:last_changed_at] = now if price_changed?(previous_price, price_cents)
+        attributes = { price_cents: current.regular_cents, club_price_cents: current.club_cents }
+        attributes[:last_changed_at] = now if regular_changed?(previous, current)
         @product.update!(attributes)
 
         check
       end
     end
 
-    def price_changed?(previous_price, current_price)
-      !previous_price.nil? && previous_price != current_price
+    def baseline?(previous)
+      previous.regular_cents.nil?
     end
 
-    def notify_price_change(previous_price, current_price)
-      return unless price_changed?(previous_price, current_price)
+    def regular_changed?(previous, current)
+      !baseline?(previous) && previous.regular_cents != current.regular_cents
+    end
 
-      PriceMailer.price_changed(@product, previous_price, current_price).deliver_now
+    def club_deal?(previous, current)
+      return false if baseline?(previous)
+      return false if current.club_cents.nil?
+
+      current.club_cents < current.regular_cents && current.club_cents != previous.club_cents
+    end
+
+    def notify(previous, current)
+      if regular_changed?(previous, current)
+        PriceMailer.price_changed(@product, previous.regular_cents, current.regular_cents).deliver_now
+      end
+
+      if club_deal?(previous, current)
+        PriceMailer.club_offer(@product, current.club_cents, current.regular_cents).deliver_now
+      end
     end
 
     def record_failure(error)

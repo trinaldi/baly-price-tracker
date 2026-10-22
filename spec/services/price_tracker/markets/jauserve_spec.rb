@@ -36,4 +36,8 @@ RSpec.describe PriceTracker::Markets::Jauserve do
     expect { described_class.price_cents(html_with(sales: "abc")) }
       .to raise_error(PriceTracker::Parser::ParseError)
   end
+
+  it "has no club price" do
+    expect(described_class.club_price_cents("<html></html>")).to be_nil
+  end
 end
