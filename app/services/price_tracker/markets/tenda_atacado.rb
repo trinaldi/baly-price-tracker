@@ -44,7 +44,7 @@ module PriceTracker
           end
 
           if now >= deadline
-            raise Parser::ParseError, "availability markers did not stabilize"
+            raise ParseError, "availability markers did not stabilize"
           end
 
           sleep 0.2
