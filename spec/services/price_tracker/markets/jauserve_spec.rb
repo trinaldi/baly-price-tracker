@@ -29,12 +29,12 @@ RSpec.describe PriceTracker::Markets::Jauserve do
 
   it "raises ParseError when there is no price" do
     expect { described_class.price_cents("<html></html>") }
-      .to raise_error(PriceTracker::Parser::ParseError)
+      .to raise_error(PriceTracker::Markets::ParseError)
   end
 
   it "raises ParseError when the value is not a number" do
     expect { described_class.price_cents(html_with(sales: "abc")) }
-      .to raise_error(PriceTracker::Parser::ParseError)
+      .to raise_error(PriceTracker::Markets::ParseError)
   end
 
   it "has no club price" do

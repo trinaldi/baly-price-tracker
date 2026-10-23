@@ -17,14 +17,14 @@ module PriceTracker
 
       def self.price_cents(html)
         node = Nokogiri::HTML(html).at_css(PRICE_SELECTOR)
-        raise Parser::ParseError, "price element not found" if node.nil?
+        raise Markets::ParseError, "price element not found" if node.nil?
 
         raw = node["content"]
 
         begin
           (BigDecimal(raw) * 100).round.to_i
         rescue ArgumentError, FloatDomainError
-          raise Parser::ParseError, "invalid price: #{raw.inspect}"
+          raise Markets::ParseError, "invalid price: #{raw.inspect}"
         end
       end
     end

@@ -17,7 +17,7 @@ module PriceTracker
 
       notify(previous, current)
       check
-    rescue Fetcher::FetchError, Parser::ParseError, Markets::UnknownMarket, Markets::ConfigError => e
+    rescue Fetcher::FetchError, Markets::ParseError, Markets::UnknownMarket, Markets::ConfigError => e
       record_failure(e)
     end
 
