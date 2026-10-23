@@ -41,12 +41,12 @@ RSpec.describe PriceTracker::Markets::Furlanetti do
 
     it "raises ParseError when the price element is missing" do
       expect { described_class.price_cents("<html></html>") }
-        .to raise_error(PriceTracker::Parser::ParseError)
+        .to raise_error(PriceTracker::Markets::ParseError)
     end
 
     it "raises ParseError when the text has no price" do
       expect { described_class.price_cents(page(regular: "Esgotado")) }
-        .to raise_error(PriceTracker::Parser::ParseError)
+        .to raise_error(PriceTracker::Markets::ParseError)
     end
   end
 
@@ -75,7 +75,7 @@ RSpec.describe PriceTracker::Markets::Furlanetti do
       page = page(regular: "R$ 1,95", offer: "Preço especial para membros do Promoções do Clube")
 
       expect { described_class.club_price_cents(page) }
-        .to raise_error(PriceTracker::Parser::ParseError)
+        .to raise_error(PriceTracker::Markets::ParseError)
     end
   end
 end

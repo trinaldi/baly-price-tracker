@@ -13,7 +13,7 @@ module PriceTracker
 
       def self.price_cents(html)
         node = Nokogiri::HTML(html).at_css(REGULAR_PRICE_SELECTOR)
-        raise Parser::ParseError, "price element not found" if node.nil?
+        raise Markets::ParseError, "price element not found" if node.nil?
 
         to_cents(node.text, what: "price")
       end
@@ -27,7 +27,7 @@ module PriceTracker
 
       def self.to_cents(text, what:)
         match = text[PRICE_PATTERN]
-        raise Parser::ParseError, "invalid #{what}: #{text.inspect}" if match.nil?
+        raise Markets::ParseError, "invalid #{what}: #{text.inspect}" if match.nil?
 
         (BigDecimal(match.delete(".").tr(",", ".")) * 100).round.to_i
       end

@@ -149,7 +149,7 @@ RSpec.describe PriceTracker::Runner do
   context "when the parse fails" do
     before do
       allow(market).to receive(:price_cents)
-        .and_raise(PriceTracker::Parser::ParseError, "price element not found")
+        .and_raise(PriceTracker::Markets::ParseError, "price element not found")
     end
 
     it "records an error check and emails" do
