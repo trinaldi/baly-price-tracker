@@ -8,6 +8,7 @@ module PriceTracker
       PRICE_PATTERN = /\d+(?:\.\d{3})*,\d{2}/
 
       def self.host = "furlanetti.com.br"
+      def self.available?(_html) = true
 
       def self.cookie = ""
 

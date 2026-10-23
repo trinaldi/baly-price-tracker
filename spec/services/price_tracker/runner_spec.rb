@@ -23,6 +23,7 @@ RSpec.describe PriceTracker::Runner do
   before do
     allow(PriceTracker::Markets).to receive(:for).and_return(market)
     allow(market).to receive(:price_cents).and_return(490)
+    allow(market).to receive(:available?).and_return(true)
     allow(market).to receive(:club_price_cents).and_return(nil)
     allow(PriceTracker::Fetcher).to receive(:get).and_return("<html></html>")
     allow(PriceMailer).to receive(:price_changed).and_return(delivery)

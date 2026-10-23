@@ -18,22 +18,39 @@ class PriceMailer < ApplicationMailer
     @products = products.map do |product|
       market = PriceTracker::Markets.for(product.url)
 
-      html = PriceTracker::Fetcher.get(
-        product.url,
-        headers: { "Cookie" => market.cookie }
-      )
+      html =
+        if market.respond_to?(:fetch_html)
+          market.fetch_html(product.url)
+        else
+          PriceTracker::Fetcher.get(
+            product.url,
+            headers: { "Cookie" => market.cookie }
+          )
+        end
 
-      {
-        name: product.name,
-        url: product.url,
-        price: format_brl(market.price_cents(html)),
-        error: nil
-      }
+      if market.respond_to?(:available?) && !market.available?(html)
+        {
+          name: product.name,
+          url: product.url,
+          price: "Indisponível",
+          club_price: nil,
+          error: nil
+        }
+      else
+        {
+          name: product.name,
+          url: product.url,
+          price: format_brl(market.price_cents(html)),
+          club_price: market.club_price_cents(html)&.then { |cents| format_brl(cents) },
+          error: nil
+        }
+      end
     rescue StandardError => e
       {
         name: product.name,
         url: product.url,
         price: nil,
+        club_price: nil,
         error: "#{e.class}: #{e.message}"
       }
     end

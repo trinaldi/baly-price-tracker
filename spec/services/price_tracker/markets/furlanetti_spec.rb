@@ -77,5 +77,9 @@ RSpec.describe PriceTracker::Markets::Furlanetti do
       expect { described_class.club_price_cents(page) }
         .to raise_error(PriceTracker::Markets::ParseError)
     end
+
+    it "is always available" do
+      expect(described_class.available?("<html></html>")).to be(true)
+    end
   end
 end

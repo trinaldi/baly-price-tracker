@@ -6,6 +6,7 @@ module PriceTracker
       def self.host = "www.simaodoces.com.br"
       def self.cookie = "LOJA=1106817"
       def self.club_price_cents(_html) = nil
+      def self.available?(_html) = true
 
       def self.price_cents(html)
         node = Nokogiri::HTML(html).at_css(PRICE_SELECTOR)
