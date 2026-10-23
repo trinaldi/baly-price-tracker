@@ -25,7 +25,13 @@ module PriceTracker
 
     def fetch_and_parse
       market = Markets.for(@product.url)
-      html = Fetcher.get(@product.url, headers: request_headers(market))
+
+      html =
+        if market.respond_to?(:fetch_html)
+          market.fetch_html(@product.url)
+        else
+          Fetcher.get(@product.url, headers: request_headers(market))
+        end
 
       Prices.new(
         regular_cents: market.price_cents(html),
