@@ -27,14 +27,21 @@ RSpec.describe PriceTracker::Markets::Jauserve do
     expect(described_class.price_cents(html_with(sales: "3.49", list: "3.99"))).to eq(349)
   end
 
-  it "raises ParseError when there is no price" do
-    expect { described_class.price_cents("<html></html>") }
-      .to raise_error(PriceTracker::Markets::ParseError)
-  end
-
   it "raises ParseError when the value is not a number" do
     expect { described_class.price_cents(html_with(sales: "abc")) }
       .to raise_error(PriceTracker::Markets::ParseError)
+  end
+
+  it "raises ParseError when the price is absent" do
+    expect { described_class.price_cents("<html></html>") }
+      .to raise_error(
+        PriceTracker::Markets::ParseError,
+        "price element not found"
+      )
+  end
+
+  it "returns false when the price is absent" do
+    expect(described_class.available?("<html></html>")).to be(false)
   end
 
   it "has no club price" do
