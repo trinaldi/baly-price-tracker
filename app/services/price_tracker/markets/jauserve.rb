@@ -28,6 +28,11 @@ module PriceTracker
           raise Markets::ParseError, "invalid price: #{raw.inspect}"
         end
       end
+
+      def self.available?(html)
+        doc = Nokogiri::HTML(html)
+        !doc.at_css(PRICE_SELECTOR).nil?
+      end
     end
   end
 end
