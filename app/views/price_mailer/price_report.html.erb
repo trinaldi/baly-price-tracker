@@ -1,28 +1,88 @@
-<h1>Relatório de preços atuais</h1>
+<h1 style="margin: 0 0 8px; color: #1f2937; font-size: 24px;">
+  Relatório de preços
+</h1>
 
-<table>
+<p style="margin: 0 0 24px; color: #6b7280; font-size: 14px;">
+  Confira os preços atuais dos produtos monitorados.
+</p>
+
+<table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #374151;">
   <thead>
-    <tr>
-      <th>Produto</th>
-      <th>Preço atual</th>
-      <th>Preço do clube</th>
-      <th>Link</th>
+    <tr style="background-color: #f3f4f6; text-align: left;">
+      <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">
+        Produto
+      </th>
+      <th style="padding: 12px; border-bottom: 2px solid #e5e7eb; white-space: nowrap;">
+        Preço atual
+      </th>
+      <th style="padding: 12px; border-bottom: 2px solid #e5e7eb; text-align: center; white-space: nowrap;">
+        Preço do clube
+      </th>
+      <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">
+        Loja
+      </th>
     </tr>
   </thead>
+
   <tbody>
     <% @products.each do |product| %>
       <tr>
-        <td><%= product[:name] %></td>
-        <td>
+        <td style="padding: 14px 12px; border-bottom: 1px solid #e5e7eb;">
+          <%= product[:name] %>
+        </td>
+
+        <td style="padding: 14px 12px; border-bottom: 1px solid #e5e7eb; white-space: nowrap;">
           <% if product[:error] %>
-            Erro: <%= product[:error] %>
+            <span style="color: #b91c1c;">
+              Erro na consulta
+            </span>
+          <% elsif product[:price].to_s.downcase == "indisponível" %>
+            <span style="color: #b45309;">
+              Indisponível
+            </span>
           <% else %>
-            <%= product[:price] %>
+            <strong style="color: #047857;">
+              <%= product[:price] %>
+            </strong>
           <% end %>
         </td>
-        <td><%= product[:club_price] || "-" %></td>
-        <td><%= link_to product[:url], product[:url] %></td>
+
+        <td style="padding: 14px 12px; border-bottom: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">
+          <%= product[:club_price].presence || "-" %>
+        </td>
+
+        <td style="padding: 14px 12px; border-bottom: 1px solid #e5e7eb;">
+          <% host = URI.parse(product[:url]).host.to_s.downcase %>
+          <% store_name =
+            case host
+            when /simaodoces\.com\.br/
+              "Simão Doces"
+            when /jauserve\.com\.br/
+              "Jaú Serve"
+            when /furlanetti\.com\.br/
+              "Furlanetti"
+            when /tendaatacado\.com\.br/
+              "Tenda Atacado"
+            else
+              host
+            end
+          %>
+
+          <%= link_to store_name,
+                      product[:url],
+                      style: "color: #2563eb; text-decoration: none;" %>
+
+          <% if product[:error] %>
+            <div style="margin-top: 4px; color: #b91c1c; font-size: 12px;">
+              <%= product[:error] %>
+            </div>
+          <% end %>
+        </td>
       </tr>
     <% end %>
   </tbody>
 </table>
+
+<p style="margin: 20px 0 0; color: #9ca3af; font-size: 12px;">
+  Relatório automático. Os preços e a disponibilidade podem mudar conforme a loja e a região.
+</p>
