@@ -205,13 +205,6 @@ config/products.yml                    the list of tracked products
 lib/tasks/price.rake                   price:sync, price:check, price:report
 ```
 
-## Known limitations and ideas
-
-- A site that stays down sends one failure email per run, which is two a day.
-- The price changed email is sent after the data is saved. If SMTP fails at that moment, that alert is lost.
-- Extraction depends on the page markup, which sites can change. A failed extraction is recorded as an error and is never saved as a price.
-- Ideas: JSON-LD as a price source, price target alerts, back in stock alerts, and a JSON endpoint with the price history.
-
 ## A note on scraping
 
 This is a personal tool. It makes one request per product per run, twice a day. Check the terms of each site before adding it.
