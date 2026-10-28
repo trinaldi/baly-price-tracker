@@ -24,7 +24,7 @@ class PriceMailer < ApplicationMailer
         else
           PriceTracker::Fetcher.get(
             product.url,
-            headers: { "Cookie" => market.cookie }
+            headers: { 'Cookie' => market.cookie }
           )
         end
 
@@ -32,7 +32,7 @@ class PriceMailer < ApplicationMailer
         {
           name: product.name,
           url: product.url,
-          price: "Indisponível",
+          price: 'Indisponível',
           club_price: nil,
           error: nil
         }
@@ -55,7 +55,7 @@ class PriceMailer < ApplicationMailer
       }
     end
 
-    mail to: recipient, subject: "Relatório de preços atuais"
+    mail to: recipient, subject: 'Relatório de preços atuais'
   end
 
   def club_offer(product, club_cents, regular_cents)
@@ -69,10 +69,10 @@ class PriceMailer < ApplicationMailer
   private
 
   def recipient
-    ENV.fetch("PRICE_ALERT_EMAIL")
+    ENV.fetch('PRICE_ALERT_EMAIL')
   end
 
   def format_brl(cents)
-    format("R$ %.2f", cents / 100.0).tr(".", ",")
+    format('R$ %.2f', cents / 100.0).tr('.', ',')
   end
 end

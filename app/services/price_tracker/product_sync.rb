@@ -1,7 +1,7 @@
 module PriceTracker
   class ProductSync
     CONFIG_KEYS = %w[name url].freeze
-    DEFAULT_PATH = Rails.root.join("config/products.yml")
+    DEFAULT_PATH = Rails.root.join('config/products.yml')
 
     def self.call(path = DEFAULT_PATH)
       new(path).call
@@ -22,7 +22,7 @@ module PriceTracker
     private
 
     def entries
-      YAML.safe_load_file(@path).fetch("products")
+      YAML.safe_load_file(@path).fetch('products')
     end
   end
 end

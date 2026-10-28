@@ -6,3 +6,6 @@ Layout/SpaceInsideArrayLiteralBrackets:
 
 Layout/EmptyLinesAroundClassBody:
   Enabled: true
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes

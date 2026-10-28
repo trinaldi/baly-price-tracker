@@ -1,14 +1,14 @@
-require "bigdecimal"
-require "ferrum"
+require 'bigdecimal'
+require 'ferrum'
 
 module PriceTracker
   module Markets
     class TendaAtacado
       extend Defaults
 
-      AVAILABLE_SELECTOR   = ".ButtonBuyComponent".freeze
-      UNAVAILABLE_SELECTOR = ".ProductNotAvailableComponent".freeze
-      PRICE_SELECTOR       = ".SimplePriceComponent".freeze
+      AVAILABLE_SELECTOR   = '.ButtonBuyComponent'.freeze
+      UNAVAILABLE_SELECTOR = '.ProductNotAvailableComponent'.freeze
+      PRICE_SELECTOR       = '.SimplePriceComponent'.freeze
       PRICE_PATTERN        = /\d+(?:\.\d{3})*,\d{2}/
 
       BROWSER_TIMEOUT      = 30
@@ -16,7 +16,7 @@ module PriceTracker
       AVAILABILITY_TIMEOUT = 15
       STABLE_FOR           = 2
 
-      def self.host = "www.tendaatacado.com.br"
+      def self.host = 'www.tendaatacado.com.br'
       def self.cookie = nil
 
       def self.fetch_html(url)
@@ -36,17 +36,17 @@ module PriceTracker
         return false if doc.at_css(UNAVAILABLE_SELECTOR)
         return true if doc.at_css(AVAILABLE_SELECTOR)
 
-        raise ParseError, "availability markers not found"
+        raise ParseError, 'availability markers not found'
       end
 
       def self.price_cents(html)
         node = Nokogiri::HTML(html).at_css(PRICE_SELECTOR)
-        raise ParseError, "price element not found" if node.nil?
+        raise ParseError, 'price element not found' if node.nil?
 
         match = node.text[PRICE_PATTERN]
         raise ParseError, "invalid price: #{node.text.inspect}" if match.nil?
 
-        (BigDecimal(match.delete(".").tr(",", ".")) * 100).round.to_i
+        (BigDecimal(match.delete('.').tr(',', '.')) * 100).round.to_i
       end
 
       def self.wait_for_network_idle(page)
@@ -72,7 +72,7 @@ module PriceTracker
             return html
           end
 
-          raise ParseError, "availability markers did not stabilize" if now >= deadline
+          raise ParseError, 'availability markers did not stabilize' if now >= deadline
 
           sleep 0.2
         end

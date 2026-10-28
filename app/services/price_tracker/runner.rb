@@ -15,12 +15,12 @@ module PriceTracker
       previous = Prices.new(
         regular_cents: @product.price_cents,
         club_cents: @product.club_price_cents,
-        status: "ok"
+        status: 'ok'
       )
 
       current = fetch_and_parse
 
-      return record_unavailable if current.status == "unavailable"
+      return record_unavailable if current.status == 'unavailable'
 
       check = record_success(current, previous)
       notify(previous, current)
@@ -37,13 +37,13 @@ module PriceTracker
       html = market.fetch_html(@product.url)
 
       unless market.available?(html)
-        return Prices.new(regular_cents: nil, club_cents: nil, status: "unavailable")
+        return Prices.new(regular_cents: nil, club_cents: nil, status: 'unavailable')
       end
 
       Prices.new(
         regular_cents: market.price_cents(html),
         club_cents: market.club_price_cents(html),
-        status: "ok"
+        status: 'ok'
       )
     end
 
@@ -52,7 +52,7 @@ module PriceTracker
 
       ActiveRecord::Base.transaction do
         check = @product.price_checks.create!(
-          status: "ok",
+          status: 'ok',
           price_cents: current.regular_cents,
           club_price_cents: current.club_cents,
           checked_at: now
@@ -71,7 +71,7 @@ module PriceTracker
 
     def record_unavailable
       @product.price_checks.create!(
-        status: "unavailable",
+        status: 'unavailable',
         checked_at: Time.current
       )
     end
@@ -108,7 +108,7 @@ module PriceTracker
 
     def record_failure(error)
       check = @product.price_checks.create!(
-        status: "error",
+        status: 'error',
         error_message: error.message,
         checked_at: Time.current
       )

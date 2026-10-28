@@ -1,5 +1,5 @@
-require "net/http"
-require "openssl"
+require 'net/http'
+require 'openssl'
 
 module PriceTracker
   class Fetcher
@@ -7,7 +7,7 @@ module PriceTracker
 
     OPEN_TIMEOUT = 10
     READ_TIMEOUT = 10
-    USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:160.0) Gecko/20100101 Firefox/160.0".freeze
+    USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:160.0) Gecko/20100101 Firefox/160.0'.freeze
     NETWORK_ERRORS = [
       Net::OpenTimeout,
       Net::ReadTimeout,
@@ -22,12 +22,12 @@ module PriceTracker
       uri = URI.parse(url)
 
       request = Net::HTTP::Get.new(uri)
-      request["User-Agent"] = USER_AGENT
+      request['User-Agent'] = USER_AGENT
       headers.each { |key, value| request[key] = value }
 
       response = Net::HTTP.start(
         uri.host, uri.port,
-        use_ssl: uri.scheme == "https",
+        use_ssl: uri.scheme == 'https',
         open_timeout:  OPEN_TIMEOUT,
         read_timeout: READ_TIMEOUT
       ) { |http| http.request(request) }
