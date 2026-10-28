@@ -26,7 +26,7 @@ module PriceTracker
       notify(previous, current)
       check
     rescue Fetcher::FetchError, Markets::ParseError,
-           Markets::UnknownMarket, Markets::ConfigError => e
+      Markets::UnknownMarket, Markets::ConfigError => e
       record_failure(e)
     end
 
@@ -34,20 +34,10 @@ module PriceTracker
 
     def fetch_and_parse
       market = Markets.for(@product.url)
+      html = market.fetch_html(@product.url)
 
-      html =
-        if market.respond_to?(:fetch_html)
-          market.fetch_html(@product.url)
-        else
-          Fetcher.get(@product.url, headers: request_headers(market))
-        end
-
-      if market.respond_to?(:available?) && !market.available?(html)
-        return Prices.new(
-          regular_cents: nil,
-          club_cents: nil,
-          status: "unavailable"
-        )
+      unless market.available?(html)
+        return Prices.new(regular_cents: nil, club_cents: nil, status: "unavailable")
       end
 
       Prices.new(
@@ -55,10 +45,6 @@ module PriceTracker
         club_cents: market.club_price_cents(html),
         status: "ok"
       )
-    end
-
-    def request_headers(market)
-      { "Cookie" => market.cookie }
     end
 
     def record_success(current, previous)

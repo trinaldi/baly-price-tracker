@@ -3,6 +3,8 @@ require "bigdecimal"
 module PriceTracker
   module Markets
     class Furlanetti
+      extend Defaults
+
       REGULAR_PRICE_SELECTOR = '[data-testid="price-display-price"]'.freeze
       OFFER_HEADER_SELECTOR  = '[data-testid="offer-panel-header"]'.freeze
       PRICE_PATTERN = /\d+(?:\.\d{3})*,\d{2}/

@@ -19,4 +19,12 @@ RSpec.describe PriceMailer do
     expect(mail.to).to eq([ "me@example.com" ])
     expect(mail.body.encoded).to include("boom")
   end
+
+  it "builds the club_offer email" do
+    mail = described_class.club_offer(product, 149, 195)
+
+    expect(mail.to).to eq(["me@example.com"])
+    expect(mail.subject).to include("clube")
+    expect(mail.body.encoded).to include("R$ 1,49").and include("R$ 1,95")
+  end
 end
