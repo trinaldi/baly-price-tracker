@@ -10,25 +10,25 @@ RSpec.describe PriceTracker::Runner do
   end
 
   let(:product) do
-    Product.create!(
-      name: "Baly",
-      slug: "baly",
-      url: "https://example.com/baly"
-    )
+    Product.create!(name: "Baly", slug: "baly", url: "https://example.com/baly")
   end
-  let(:parsed) { PriceTracker::Parser::Result.new(name: "Baly", price_cents: 490) }
   let(:delivery) { instance_double(ActionMailer::MessageDelivery, deliver_now: true) }
-
 
   before do
     allow(PriceTracker::Markets).to receive(:for).and_return(market)
-    allow(market).to receive(:price_cents).and_return(490)
+    allow(market).to receive(:fetch_html).and_return("<html></html>")
     allow(market).to receive(:available?).and_return(true)
+    allow(market).to receive(:price_cents).and_return(490)
     allow(market).to receive(:club_price_cents).and_return(nil)
-    allow(PriceTracker::Fetcher).to receive(:get).and_return("<html></html>")
     allow(PriceMailer).to receive(:price_changed).and_return(delivery)
-    allow(PriceMailer).to receive(:failed).and_return(delivery)
     allow(PriceMailer).to receive(:club_offer).and_return(delivery)
+    allow(PriceMailer).to receive(:failed).and_return(delivery)
+  end
+
+  it "fetches the page through the market" do
+    described_class.call(product)
+
+    expect(market).to have_received(:fetch_html).with("https://example.com/baly")
   end
 
   context "when the market is unknown" do
@@ -40,7 +40,8 @@ RSpec.describe PriceTracker::Runner do
       check = described_class.call(product)
 
       expect(check.status).to eq("error")
-      expect(PriceMailer).to have_received(:failed).with(product, a_string_including("unknown.example.com"))
+      expect(PriceMailer).to have_received(:failed)
+        .with(product, a_string_including("unknown.example.com"))
     end
   end
 
@@ -125,39 +126,44 @@ RSpec.describe PriceTracker::Runner do
     end
   end
 
-  context "when the fetch fails" do
+  context "when the product is unavailable" do
     before do
       product.update!(price_cents: 450)
-      allow(PriceTracker::Fetcher).to receive(:get)
-        .and_raise(PriceTracker::Fetcher::FetchError, "boom")
+      allow(market).to receive(:available?).and_return(false)
     end
 
-    it "records an error check and emails" do
+    it "records an unavailable check without a price" do
       check = described_class.call(product)
 
-      expect(check.status).to eq("error")
-      expect(check.error_message).to eq("boom")
-      expect(PriceMailer).to have_received(:failed).with(product, "boom")
+      expect(check.status).to eq("unavailable")
+      expect(check.price_cents).to be_nil
     end
 
-    it "keeps the product price untouched" do
+    it "keeps the last known price and sends no email" do
       described_class.call(product)
 
       expect(product.reload.price_cents).to eq(450)
+      expect(PriceMailer).not_to have_received(:price_changed)
+      expect(PriceMailer).not_to have_received(:failed)
+    end
+
+    it "does not ask the market for a price" do
+      described_class.call(product)
+
+      expect(market).not_to have_received(:price_cents)
     end
   end
 
-  context "when the parse fails" do
+  context "when the product comes back with a different price" do
     before do
-      allow(market).to receive(:price_cents)
-        .and_raise(PriceTracker::Markets::ParseError, "price element not found")
+      product.update!(price_cents: 450)
+      product.price_checks.create!(status: "unavailable", checked_at: 1.day.ago)
     end
 
-    it "records an error check and emails" do
-      check = described_class.call(product)
+    it "emails the price change against the last known price" do
+      described_class.call(product)
 
-      expect(check.status).to eq("error")
-      expect(PriceMailer).to have_received(:failed)
+      expect(PriceMailer).to have_received(:price_changed).with(product, 450, 490)
     end
   end
 
@@ -181,7 +187,7 @@ RSpec.describe PriceTracker::Runner do
     context "when the club offer appears" do
       before { product.update!(price_cents: 490, club_price_cents: nil) }
 
-      it "emails the club offer" do
+      it "emails the club offer only" do
         described_class.call(product)
 
         expect(PriceMailer).to have_received(:club_offer).with(product, 399, 490)
@@ -240,6 +246,42 @@ RSpec.describe PriceTracker::Runner do
       expect(product.reload.club_price_cents).to be_nil
       expect(PriceMailer).not_to have_received(:club_offer)
       expect(PriceMailer).not_to have_received(:price_changed)
+    end
+  end
+
+  context "when the fetch fails" do
+    before do
+      product.update!(price_cents: 450)
+      allow(market).to receive(:fetch_html)
+        .and_raise(PriceTracker::Fetcher::FetchError, "boom")
+    end
+
+    it "records an error check and emails" do
+      check = described_class.call(product)
+
+      expect(check.status).to eq("error")
+      expect(check.error_message).to eq("boom")
+      expect(PriceMailer).to have_received(:failed).with(product, "boom")
+    end
+
+    it "keeps the product price untouched" do
+      described_class.call(product)
+
+      expect(product.reload.price_cents).to eq(450)
+    end
+  end
+
+  context "when the parse fails" do
+    before do
+      allow(market).to receive(:price_cents)
+        .and_raise(PriceTracker::Markets::ParseError, "price element not found")
+    end
+
+    it "records an error check and emails" do
+      check = described_class.call(product)
+
+      expect(check.status).to eq("error")
+      expect(PriceMailer).to have_received(:failed)
     end
   end
 end

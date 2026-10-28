@@ -4,51 +4,29 @@ require "ferrum"
 module PriceTracker
   module Markets
     class TendaAtacado
+      extend Defaults
+
       AVAILABLE_SELECTOR   = ".ButtonBuyComponent".freeze
       UNAVAILABLE_SELECTOR = ".ProductNotAvailableComponent".freeze
       PRICE_SELECTOR       = ".SimplePriceComponent".freeze
       PRICE_PATTERN        = /\d+(?:\.\d{3})*,\d{2}/
 
+      BROWSER_TIMEOUT      = 30
+      NETWORK_IDLE_TIMEOUT = 10
+      AVAILABILITY_TIMEOUT = 15
+      STABLE_FOR           = 2
+
       def self.host = "www.tendaatacado.com.br"
       def self.cookie = nil
-      def self.club_price_cents(_html) = nil
 
       def self.fetch_html(url)
-        browser = Ferrum::Browser.new
+        browser = Ferrum::Browser.new(timeout: BROWSER_TIMEOUT, process_timeout: BROWSER_TIMEOUT)
         page = browser.create_page
-
         page.go_to(url)
-
-        timeout = 15
-        stable_for = 2
-        deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + timeout
-        state = nil
-        state_since = nil
-
-        loop do
-          now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-          doc = Nokogiri::HTML(page.body)
-
-          current_state =
-            if doc.at_css(UNAVAILABLE_SELECTOR)
-              :unavailable
-            elsif doc.at_css(AVAILABLE_SELECTOR)
-              :available
-            end
-
-          if current_state != state
-            state = current_state
-            state_since = now
-          elsif state && now - state_since >= stable_for
-            return page.body
-          end
-
-          if now >= deadline
-            raise ParseError, "availability markers did not stabilize"
-          end
-
-          sleep 0.2
-        end
+        wait_for_network_idle(page)
+        wait_for_stable_availability(page)
+      rescue Ferrum::Error => e
+        raise Fetcher::FetchError, "#{e.class}: #{e.message}"
       ensure
         browser&.quit
       end
@@ -70,6 +48,46 @@ module PriceTracker
 
         (BigDecimal(match.delete(".").tr(",", ".")) * 100).round.to_i
       end
+
+      def self.wait_for_network_idle(page)
+        page.network.wait_for_idle(timeout: NETWORK_IDLE_TIMEOUT)
+      rescue Ferrum::TimeoutError
+        nil # some pages never go idle; the loop below still decides
+      end
+
+      def self.wait_for_stable_availability(page)
+        deadline = monotonic_now + AVAILABILITY_TIMEOUT
+        state = nil
+        state_since = nil
+
+        loop do
+          now = monotonic_now
+          html = page.body
+          current = availability_state(Nokogiri::HTML(html))
+
+          if current != state
+            state = current
+            state_since = now
+          elsif state && now - state_since >= STABLE_FOR
+            return html
+          end
+
+          raise ParseError, "availability markers did not stabilize" if now >= deadline
+
+          sleep 0.2
+        end
+      end
+
+      def self.availability_state(doc)
+        return :unavailable if doc.at_css(UNAVAILABLE_SELECTOR)
+
+        :available if doc.at_css(AVAILABLE_SELECTOR)
+      end
+
+      def self.monotonic_now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+      private_class_method :wait_for_network_idle, :wait_for_stable_availability,
+                           :availability_state, :monotonic_now
     end
   end
 end
