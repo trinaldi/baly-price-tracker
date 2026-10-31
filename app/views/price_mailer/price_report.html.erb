@@ -1,3 +1,16 @@
+<%
+  products = @products.uniq do |product|
+    store_name = PriceTracker::Markets.for(product[:url]).store_name
+    normalized_name = product[:name].to_s.downcase.strip.gsub(/\s+/, " ")
+
+    [normalized_name, store_name]
+  end
+
+  products.sort_by! do |product|
+    PriceTracker::Markets.for(product[:url]).store_name.downcase
+  end
+%>
+
 <h1 style="margin: 0 0 8px; color: #1f2937; font-size: 24px;">
   Relatório de preços
 </h1>
@@ -25,7 +38,7 @@
   </thead>
 
   <tbody>
-    <% @products.each do |product| %>
+    <% products.each do |product| %>
       <tr>
         <td style="padding: 14px 12px; border-bottom: 1px solid #e5e7eb;">
           <%= product[:name] %>
