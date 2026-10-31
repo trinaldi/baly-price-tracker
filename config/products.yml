@@ -1,23 +1,25 @@
 products:
+  baly_morango_e_pessego_473ml:
+    name: "Energético Baly Morango E Pêssego 473ml"
+    url: "https://www.supercentralonline.com.br/produto/17695/energetico-baly-morango-e-pessego-473ml"
   baly_melancia_sem_acucar:
     name: "Baly energetico melancia zero açucar 473ML"
     url: "https://www.simaodoces.com.br/mercearia-/baly-energetico-melancia-zero-acucar-473ml"
-  agua_com_gas_12_unidades:
-    name: "Água Mineral Santa Inês com Gás 500ml c/12 un"
-    url: "https://www.simaodoces.com.br/santa-ines-agua-mineral-c-gas-500ml-12-unidades"
-  chocolate_70_neugebauer:
-    name: "Neugebauer tablete 1891 supreme intense 45G"
-    url: "https://www.simaodoces.com.br/doces/neugebauer-tablete-1891-supreme-intense-45g"
   energy_invasion_maca_verde_zero:
     name: "Energético Maçã Verde Zero Açúcar Energy Invasion Lata 473ml"
     url: "https://www.jauserve.com.br/70341675922.html"
+  agua_com_gas_12_unidades:
+    name: "Água Mineral Santa Inês com Gás 500ml c/12 un"
+    url: "https://www.simaodoces.com.br/santa-ines-agua-mineral-c-gas-500ml-12-unidades"
+  agua-mineral_nestle_com_gas_510ml:
+    name: "Água Mineral Nestlé Com Gás 510ml"
+    url: "https://www.supercentralonline.com.br/produto/14265/agua-mineral-nestle-com-gas-510ml"
   cafe_torrado_em_graos_espresso_cafe_pele_pacote_1kg:
     name: "Café Torrado em Grãos Espresso Café Pelé Pacote 1kg"
     url: "https://furlanetti.com.br/p/Cafe-Torrado-em-Graos-Espresso-Cafe-Pele-Pacote-1kg"
   papel_higienico_neve_supreme_24:
     name: "Papel Higiênico Neve Supreme Folha Tripla Leve 24 Pague 21 20m"
     url: "https://www.tendaatacado.com.br/produto/papel-higienico-neve-supreme-folha-tripla-leve-24-pague-21-20m?region_id=000105"
-  papel-higienico-neve-supreme-folha-tripla-leve:
-    name: "Papel Higienico Neve Supreme Folha Tripla Leve 12 Pague 11 20M"
+  papel_higienico_neve_supreme_folha_tripla_leve:
+    name: "Papel Higienico Neve Supreme Folha Tripla Leve 12 Pague 11 20m"
     url: "https://www.tendaatacado.com.br/produto/papel-higienico-neve-supreme-folha-tripla-leve-12-pague-11-20m?region_id=000105"
-    

@@ -9,6 +9,7 @@ module PriceTracker
       OFFER_HEADER_SELECTOR  = '[data-testid="offer-panel-header"]'.freeze
       PRICE_PATTERN = /\d+(?:\.\d{3})*,\d{2}/
 
+      def self.store_name = 'Furlanetti'
       def self.host = 'furlanetti.com.br'
       def self.available?(_html) = true
 

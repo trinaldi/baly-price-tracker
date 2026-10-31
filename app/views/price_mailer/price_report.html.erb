@@ -52,21 +52,7 @@
         </td>
 
         <td style="padding: 14px 12px; border-bottom: 1px solid #e5e7eb;">
-          <% host = URI.parse(product[:url]).host.to_s.downcase %>
-          <% store_name =
-            case host
-            when /simaodoces\.com\.br/
-              "Simão Doces"
-            when /jauserve\.com\.br/
-              "Jaú Serve"
-            when /furlanetti\.com\.br/
-              "Furlanetti"
-            when /tendaatacado\.com\.br/
-              "Tenda Atacado"
-            else
-              host
-            end
-          %>
+          <% store_name = PriceTracker::Markets.for(product[:url]).store_name %>
 
           <%= link_to store_name,
                       product[:url],

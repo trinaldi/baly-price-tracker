@@ -16,6 +16,7 @@ module PriceTracker
       AVAILABILITY_TIMEOUT = 15
       STABLE_FOR           = 2
 
+      def self.store_name = 'Tenda Atacado'
       def self.host = 'www.tendaatacado.com.br'
       def self.cookie = nil
 

@@ -5,7 +5,7 @@ module PriceTracker
     class ParseError < StandardError; end
 
     def self.all
-      [ Simao, Jauserve, Furlanetti, TendaAtacado ]
+      [ Simao, Jauserve, Furlanetti, TendaAtacado, Central ]
     end
 
     def self.for(url)
