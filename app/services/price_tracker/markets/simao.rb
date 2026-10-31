@@ -5,6 +5,7 @@ module PriceTracker
 
       PRICE_SELECTOR = '#variacaoPreco'.freeze
 
+      def self.store_name = 'Simão Doces'
       def self.host = 'www.simaodoces.com.br'
       def self.cookie = 'LOJA=1106817'
 

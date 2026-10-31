@@ -8,6 +8,7 @@ module PriceTracker
       STORE_ID = '3'.freeze
       PRICE_SELECTOR = 'span.sales span.value[content]'.freeze
 
+      def self.store_name = 'Jaú Serve Supermercados'
       def self.host = 'www.jauserve.com.br'
 
       def self.cookie(cep: ENV['JAUSERVE_CEP'])
